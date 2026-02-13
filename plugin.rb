@@ -30,7 +30,7 @@ after_initialize do
 
   # Inject cached shop list as choices for the shop_ids list setting.
   # When choices are present, Discourse renders the list as a multi-select dropdown.
-  AdminDetailedSiteSettingSerializer.prepend(
+  ::AdminDetailedSiteSettingSerializer.prepend(
     Module.new do
       def valid_values
         if object.setting == "isthereanydeal_shop_ids"
