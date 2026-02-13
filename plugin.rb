@@ -10,8 +10,6 @@ enabled_site_setting :isthereanydeal_enabled
 
 register_asset "stylesheets/isthereanydeal-admin.scss"
 
-add_admin_route "isthereanydeal.admin.title", "isthereanydeal"
-
 after_initialize do
   module ::DiscourseIsthereanydeal
     PLUGIN_NAME = "discourse-isthereanydeal"
@@ -24,12 +22,28 @@ after_initialize do
   require_relative "app/controllers/isthereanydeal_admin_controller"
 
   Discourse::Application.routes.append do
-    get "/admin/plugins/isthereanydeal" => "admin/plugins#index",
-        constraints: StaffConstraint.new
-
     scope "/admin/plugins/isthereanydeal", constraints: StaffConstraint.new do
       get "/shops" => "isthereanydeal_admin#shops"
       put "/shops" => "isthereanydeal_admin#update_shops"
     end
   end
+
+  # Inject cached shop list as choices for the shop_ids list setting.
+  # When choices are present, Discourse renders the list as a multi-select dropdown.
+  AdminDetailedSiteSettingSerializer.prepend(
+    Module.new do
+      def valid_values
+        if object.setting == "isthereanydeal_shop_ids"
+          cached_shops = PluginStore.get(DiscourseIsthereanydeal::PLUGIN_NAME, "cached_shops")
+          if cached_shops.present?
+            return cached_shops.map do |s|
+              { name: "#{s['title']} (#{s['deals']} deals)", value: s["id"].to_s }
+            end
+          end
+        end
+
+        super
+      end
+    end
+  )
 end
