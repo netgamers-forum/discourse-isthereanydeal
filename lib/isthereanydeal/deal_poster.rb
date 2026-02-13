@@ -29,12 +29,10 @@ module DiscourseIsthereanydeal
       topic_id = get_today_topic_id(today)
 
       if topic_id && Topic.exists?(id: topic_id)
-        append_to_topic(topic_id, new_deals)
+        post_deal_replies(topic_id, new_deals)
       else
-        topic_id = create_new_topic(new_deals, category_id, today)
+        create_new_topic(new_deals, category_id, today)
       end
-
-      mark_deals_as_posted(new_deals) if topic_id
     end
 
     def self.get_today_topic_id(date_string)
@@ -74,7 +72,7 @@ module DiscourseIsthereanydeal
     def self.create_new_topic(deals, category_id, date_string)
       date = Date.parse(date_string)
       title = DealFormatter.topic_title(date)
-      body = DealFormatter.format_topic_body(deals)
+      body = DealFormatter.format_summary(deals)
 
       post = PostCreator.create!(
         Discourse.system_user,
@@ -91,32 +89,42 @@ module DiscourseIsthereanydeal
         "[DiscourseIsthereanydeal] Created topic #{topic_id} with #{deals.size} free deal(s)"
       )
 
-      topic_id
+      post_deal_replies(topic_id, deals)
     rescue => e
       Rails.logger.error("[DiscourseIsthereanydeal] Failed to create topic: #{e.message}")
-      nil
     end
 
-    def self.append_to_topic(topic_id, deals)
-      body = DealFormatter.format_reply_body(deals)
+    def self.post_deal_replies(topic_id, deals)
+      posted = []
 
-      PostCreator.create!(
-        Discourse.system_user,
-        topic_id: topic_id,
-        raw: body,
-        skip_validations: true,
-      )
+      deals.each do |deal_data|
+        body = DealFormatter.format_deal_reply(deal_data)
+
+        PostCreator.create!(
+          Discourse.system_user,
+          topic_id: topic_id,
+          raw: body,
+          skip_validations: true,
+        )
+
+        posted << deal_data
+      rescue => e
+        title = deal_data["title"] || "unknown"
+        Rails.logger.error(
+          "[DiscourseIsthereanydeal] Failed to post deal '#{title}' to topic #{topic_id}: #{e.message}"
+        )
+      end
+
+      mark_deals_as_posted(posted) if posted.any?
 
       Rails.logger.info(
-        "[DiscourseIsthereanydeal] Appended #{deals.size} deal(s) to topic #{topic_id}"
+        "[DiscourseIsthereanydeal] Posted #{posted.size}/#{deals.size} deal(s) to topic #{topic_id}"
       )
-    rescue => e
-      Rails.logger.error("[DiscourseIsthereanydeal] Failed to append to topic #{topic_id}: #{e.message}")
     end
 
     private_class_method :get_today_topic_id, :set_today_topic_id,
                          :posted_deal_keys, :save_posted_deal_keys,
                          :deal_key, :filter_new_deals, :mark_deals_as_posted,
-                         :create_new_topic, :append_to_topic
+                         :create_new_topic, :post_deal_replies
   end
 end
