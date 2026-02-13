@@ -24,6 +24,9 @@ after_initialize do
   require_relative "app/controllers/isthereanydeal_admin_controller"
 
   Discourse::Application.routes.append do
+    get "/admin/plugins/isthereanydeal" => "admin/plugins#index",
+        constraints: StaffConstraint.new
+
     scope "/admin/plugins/isthereanydeal", constraints: StaffConstraint.new do
       get "/shops" => "isthereanydeal_admin#shops"
       put "/shops" => "isthereanydeal_admin#update_shops"
