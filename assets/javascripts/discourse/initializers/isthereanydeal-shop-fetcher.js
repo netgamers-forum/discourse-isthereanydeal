@@ -1,12 +1,34 @@
 import { withPluginApi } from "discourse/lib/plugin-api";
 import { ajax } from "discourse/lib/ajax";
 
-function addFetchButton() {
-  const settingContainer = document.querySelector(
-    '[data-setting="isthereanydeal_shop_ids"]'
+function findShopIdsSetting() {
+  // Find the setting row by looking for its label text
+  const labels = document.querySelectorAll(
+    ".admin-detail .setting-label h3, .admin-detail .setting-label label, .setting-label h3"
   );
 
-  if (!settingContainer || settingContainer.querySelector(".itad-fetch-btn")) {
+  for (const label of labels) {
+    const text = label.textContent.toLowerCase();
+    if (text.includes("shop ids") || text.includes("shop_ids")) {
+      // Walk up to the setting container
+      return (
+        label.closest(".admin-detail") ||
+        label.closest(".setting-row") ||
+        label.closest(".row")
+      );
+    }
+  }
+
+  return null;
+}
+
+function addFetchButton() {
+  if (document.querySelector(".itad-fetch-btn")) {
+    return;
+  }
+
+  const settingContainer = findShopIdsSetting();
+  if (!settingContainer) {
     return;
   }
 
@@ -39,16 +61,7 @@ function addFetchButton() {
 
   wrapper.appendChild(btn);
   wrapper.appendChild(status);
-
-  const settingLabel = settingContainer.querySelector(".setting-label");
-  if (settingLabel) {
-    settingLabel.parentNode.insertBefore(
-      wrapper,
-      settingLabel.nextElementSibling
-    );
-  } else {
-    settingContainer.prepend(wrapper);
-  }
+  settingContainer.prepend(wrapper);
 }
 
 export default {
