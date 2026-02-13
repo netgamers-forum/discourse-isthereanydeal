@@ -29,7 +29,7 @@ class IsthereanydealAdminController < Admin::AdminController
 
     if shop_ids.is_a?(Array)
       clean_ids = shop_ids.map(&:to_i).reject(&:zero?).join("|")
-      SiteSetting.isthereanydeal_shop_ids = clean_ids
+      SiteSetting.isthereanydeal_shops = clean_ids
       render json: { success: true, shop_ids: clean_ids }
     else
       render json: { error: "shop_ids must be an array" }, status: 400

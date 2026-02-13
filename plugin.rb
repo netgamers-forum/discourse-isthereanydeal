@@ -17,7 +17,7 @@ after_initialize do
     # Named module so Ruby won't re-add it to the ancestry on reload
     module SerializerExtension
       def valid_values
-        if object.setting == "isthereanydeal_shop_ids"
+        if object.setting == "isthereanydeal_shops"
           cached_shops = PluginStore.get(DiscourseIsthereanydeal::PLUGIN_NAME, "cached_shops")
           if cached_shops.present?
             return cached_shops.map do |s|

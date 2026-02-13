@@ -86,7 +86,7 @@ module DiscourseIsthereanydeal
       }
 
       # Add shop filter if configured
-      shop_ids = SiteSetting.isthereanydeal_shop_ids
+      shop_ids = SiteSetting.isthereanydeal_shops
       if shop_ids.present?
         query_params[:shops] = shop_ids.gsub("|", ",")
       end

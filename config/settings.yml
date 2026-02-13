@@ -23,7 +23,7 @@ plugins:
     default: false
     type: bool
 
-  isthereanydeal_shop_ids:
+  isthereanydeal_shops:
     default: ""
     type: list
     list_type: compact
