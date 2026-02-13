@@ -34,7 +34,7 @@ cd /var/discourse
 ## Obtaining an IsThereAnyDeal API Key
 
 1. Create an account on [IsThereAnyDeal.com](https://isthereanydeal.com/) if you don't have one.
-2. Go to [https://isthereanydeal.com/dev/app/](https://isthereanydeal.com/dev/app/).
+2. Go to [https://isthereanydeal.com/apps/](https://isthereanydeal.com/apps/).
 3. Click **Create App** and fill in the details (app name, description, etc.).
 4. Once created, copy your **API Key** from the app dashboard.
 
