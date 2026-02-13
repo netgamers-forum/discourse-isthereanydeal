@@ -1,0 +1,9 @@
+en:
+  admin_js:
+    admin:
+      site_settings:
+        categories:
+          isthereanydeal: "IsThereAnyDeal"
+  isthereanydeal:
+    admin:
+      title: "Shops"

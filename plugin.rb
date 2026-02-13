@@ -10,6 +10,8 @@ enabled_site_setting :isthereanydeal_enabled
 
 register_asset "stylesheets/isthereanydeal-admin.scss"
 
+add_admin_route "isthereanydeal.admin.title", "isthereanydeal"
+
 after_initialize do
   module ::DiscourseIsthereanydeal
     PLUGIN_NAME = "discourse-isthereanydeal"
