@@ -6,4 +6,4 @@ en:
     isthereanydeal_country: "Two-letter country code for regional pricing (e.g. US, GB, DE)"
     isthereanydeal_include_dlc: "Include free DLC deals in addition to full games"
     isthereanydeal_include_mature: "Include deals flagged as mature content"
-    isthereanydeal_shop_ids: "Selected shop IDs (managed via the plugin admin page)"
+    isthereanydeal_shop_ids: "Shops to monitor for free deals. Click 'Fetch Shops' above to load available shops, then select from the dropdown. Leave empty to include all shops."

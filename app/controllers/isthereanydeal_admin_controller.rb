@@ -3,24 +3,23 @@
 class IsthereanydealAdminController < Admin::AdminController
   requires_plugin DiscourseIsthereanydeal::PLUGIN_NAME
 
+  # GET /admin/plugins/isthereanydeal/shops
+  # Fetches shops from ITAD API and caches them in PluginStore.
+  # The cached list is used by the serializer to populate the shop_ids
+  # multi-select dropdown in site settings.
   def shops
     client = DiscourseIsthereanydeal::ApiClient.new
     shop_list = client.fetch_shops
 
-    selected_ids = (SiteSetting.isthereanydeal_shop_ids || "")
-      .split("|")
-      .map(&:to_i)
-      .reject(&:zero?)
+    if shop_list.present?
+      PluginStore.set(DiscourseIsthereanydeal::PLUGIN_NAME, "cached_shops", shop_list)
+    else
+      shop_list = PluginStore.get(DiscourseIsthereanydeal::PLUGIN_NAME, "cached_shops") || []
+    end
 
     render json: {
       shops: shop_list.map { |s|
-        {
-          id: s["id"],
-          title: s["title"],
-          deals: s["deals"],
-          games: s["games"],
-          selected: selected_ids.include?(s["id"]),
-        }
+        { id: s["id"], title: s["title"], deals: s["deals"], games: s["games"] }
       },
     }
   end

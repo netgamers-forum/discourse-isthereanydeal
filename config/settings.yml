@@ -25,4 +25,5 @@ plugins:
 
   isthereanydeal_shop_ids:
     default: ""
-    type: string
+    type: list
+    list_type: compact
