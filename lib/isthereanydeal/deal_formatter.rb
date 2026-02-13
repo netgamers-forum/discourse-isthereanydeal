@@ -2,8 +2,67 @@
 
 module DiscourseIsthereanydeal
   class DealFormatter
+    # Maps country codes to timezone identifiers
+    COUNTRY_TIMEZONES = {
+      "EU" => "Europe/Berlin",
+      "US" => "America/New_York",
+      "GB" => "Europe/London",
+      "DE" => "Europe/Berlin",
+      "FR" => "Europe/Paris",
+      "IT" => "Europe/Rome",
+      "ES" => "Europe/Madrid",
+      "NL" => "Europe/Amsterdam",
+      "PL" => "Europe/Warsaw",
+      "SE" => "Europe/Stockholm",
+      "NO" => "Europe/Oslo",
+      "DK" => "Europe/Copenhagen",
+      "FI" => "Europe/Helsinki",
+      "PT" => "Europe/Lisbon",
+      "AT" => "Europe/Vienna",
+      "CH" => "Europe/Zurich",
+      "BE" => "Europe/Brussels",
+      "AU" => "Australia/Sydney",
+      "NZ" => "Pacific/Auckland",
+      "CA" => "America/Toronto",
+      "BR" => "America/Sao_Paulo",
+      "JP" => "Asia/Tokyo",
+      "KR" => "Asia/Seoul",
+      "CN" => "Asia/Shanghai",
+      "IN" => "Asia/Kolkata",
+      "RU" => "Europe/Moscow",
+    }.freeze
+
+    # Maps timezone identifiers to display abbreviations
+    TIMEZONE_ABBREVIATIONS = {
+      "Europe/Berlin" => "CET",
+      "America/New_York" => "EST",
+      "Europe/London" => "GMT",
+      "Europe/Paris" => "CET",
+      "Europe/Rome" => "CET",
+      "Europe/Madrid" => "CET",
+      "Europe/Amsterdam" => "CET",
+      "Europe/Warsaw" => "CET",
+      "Europe/Stockholm" => "CET",
+      "Europe/Oslo" => "CET",
+      "Europe/Copenhagen" => "CET",
+      "Europe/Helsinki" => "EET",
+      "Europe/Lisbon" => "WET",
+      "Europe/Vienna" => "CET",
+      "Europe/Zurich" => "CET",
+      "Europe/Brussels" => "CET",
+      "Australia/Sydney" => "AEST",
+      "Pacific/Auckland" => "NZST",
+      "America/Toronto" => "EST",
+      "America/Sao_Paulo" => "BRT",
+      "Asia/Tokyo" => "JST",
+      "Asia/Seoul" => "KST",
+      "Asia/Shanghai" => "CST",
+      "Asia/Kolkata" => "IST",
+      "Europe/Moscow" => "MSK",
+    }.freeze
+
     def self.topic_title(date)
-      "Free Games - #{date.strftime('%B %d, %Y')}"
+      "IsThereAnyDeal - Free Games for #{date.strftime('%d/%m/%Y')}"
     end
 
     # Summary opening post listing deal counts per shop.
@@ -51,34 +110,41 @@ module DiscourseIsthereanydeal
         lines << "![#{title}](#{banner})\n"
       end
 
-      # Price line: ~~regular~~ **Free** until expiry
-      price_line = ""
-      if regular_amount && regular_amount > 0
-        price_line = "~~#{currency} #{format('%.2f', regular_amount)}~~ "
-      end
-      price_line += "**Free**"
-
+      # Table row 1: price and expiry
+      price_cell = regular_amount && regular_amount > 0 ? "~~#{currency} #{format('%.2f', regular_amount)}~~" : ""
+      free_cell = "**Free**"
       if expiry.present?
-        begin
-          expiry_time = Time.parse(expiry.to_s)
-          price_line += " until #{expiry_time.strftime('%B %d, %Y at %H:%M UTC')}"
-        rescue ArgumentError
-          price_line += " until #{expiry}"
-        end
+        free_cell += " until **#{format_expiry(expiry)}**"
       end
 
-      lines << price_line
-      lines << ""
+      lines << "| | |"
+      lines << "|---|---|"
+      lines << "| #{price_cell} | #{free_cell} |"
 
-      # Shop and DRM info
-      info_parts = ["**Shop:** #{shop_name}"]
-      info_parts << "**DRM:** #{drm}" if drm.present?
-      lines << info_parts.join(" · ")
-      lines << ""
+      # Table row 2: shop and DRM
+      drm_cell = drm.present? ? "**DRM:** #{drm}" : ""
+      lines << "| **Shop:** #{shop_name} | #{drm_cell} |"
 
-      lines << "[Claim this deal](#{url})" if url.present?
+      # Table row 3: claim link spanning both columns
+      if url.present?
+        lines << "| [Claim this deal](#{url}) | |"
+      end
 
       lines.join("\n")
+    end
+
+    def self.format_expiry(expiry)
+      country = SiteSetting.isthereanydeal_country
+      tz_name = COUNTRY_TIMEZONES[country] || "UTC"
+      tz_abbrev = TIMEZONE_ABBREVIATIONS[tz_name] || "UTC"
+
+      utc_time = Time.parse(expiry.to_s).utc
+      tz = ActiveSupport::TimeZone[tz_name]
+      local_time = tz ? utc_time.in_time_zone(tz) : utc_time
+
+      "#{local_time.strftime('%B %d, %Y at %H:%M')} #{tz_abbrev}"
+    rescue ArgumentError
+      expiry.to_s
     end
 
     def self.format_drm(drm)
@@ -89,6 +155,6 @@ module DiscourseIsthereanydeal
       end.join(", ")
     end
 
-    private_class_method :format_drm
+    private_class_method :format_drm, :format_expiry
   end
 end
