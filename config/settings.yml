@@ -1,0 +1,28 @@
+plugins:
+  isthereanydeal_enabled:
+    default: false
+    type: bool
+
+  isthereanydeal_api_key:
+    default: ""
+    secret: true
+
+  isthereanydeal_category_id:
+    default: ""
+    type: category
+
+  isthereanydeal_country:
+    default: "US"
+    type: string
+
+  isthereanydeal_include_dlc:
+    default: false
+    type: bool
+
+  isthereanydeal_include_mature:
+    default: false
+    type: bool
+
+  isthereanydeal_shop_ids:
+    default: ""
+    type: string

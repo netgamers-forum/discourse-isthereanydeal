@@ -1,0 +1,9 @@
+en:
+  site_settings:
+    isthereanydeal_enabled: "Enable the IsThereAnyDeal free games plugin"
+    isthereanydeal_api_key: "API key for IsThereAnyDeal.com (get one at https://isthereanydeal.com/dev/app/)"
+    isthereanydeal_category_id: "Category where free game deal topics will be created"
+    isthereanydeal_country: "Two-letter country code for regional pricing (e.g. US, GB, DE)"
+    isthereanydeal_include_dlc: "Include free DLC deals in addition to full games"
+    isthereanydeal_include_mature: "Include deals flagged as mature content"
+    isthereanydeal_shop_ids: "Selected shop IDs (managed via the plugin admin page)"
