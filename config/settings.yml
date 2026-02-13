@@ -24,6 +24,6 @@ plugins:
     type: bool
 
   isthereanydeal_shops:
-    default: ""
+    default: "61|16|35"
     type: list
     list_type: compact

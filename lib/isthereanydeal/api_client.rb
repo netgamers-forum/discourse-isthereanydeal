@@ -4,7 +4,6 @@ module DiscourseIsthereanydeal
   class ApiClient
     BASE_URL = "https://api.isthereanydeal.com"
     DEALS_PATH = "/deals/v2"
-    SHOPS_PATH = "/service/shops/v1"
     MAX_LIMIT = 200
 
     def initialize
@@ -46,30 +45,6 @@ module DiscourseIsthereanydeal
       end
 
       all_deals
-    end
-
-    # Fetches the list of available shops from the ITAD API.
-    # No API key required for this endpoint.
-    # Returns an array of shop hashes [{id, title, deals, games, update}], or empty array on error.
-    def fetch_shops
-      query_params = { country: @country }
-      query_string = URI.encode_www_form(query_params)
-      url = "#{BASE_URL}#{SHOPS_PATH}?#{query_string}"
-
-      response = Excon.get(url, read_timeout: 30, connect_timeout: 10)
-
-      if response.status != 200
-        Rails.logger.error(
-          "[DiscourseIsthereanydeal] Shops API returned status #{response.status}: #{response.body.to_s[0..500]}"
-        )
-        return []
-      end
-
-      log_rate_limit_headers(response)
-      parse_response(response) || []
-    rescue Excon::Error => e
-      Rails.logger.error("[DiscourseIsthereanydeal] Shops HTTP error: #{e.message}")
-      []
     end
 
     private
