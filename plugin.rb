@@ -2,7 +2,7 @@
 
 # name: discourse-isthereanydeal
 # about: Fetches free game deals from IsThereAnyDeal.com and posts them as daily topics
-# version: 0.1.0
+# version: 1.0.0
 # authors: NetGamers
 # url: https://github.com/netgamers/discourse-isthereanydeal
 
