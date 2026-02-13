@@ -12,7 +12,7 @@ plugins:
     type: category
 
   isthereanydeal_country:
-    default: "US"
+    default: "EU"
     type: string
 
   isthereanydeal_include_dlc:
