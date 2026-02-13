@@ -67,9 +67,9 @@ module DiscourseIsthereanydeal
       deals.reject { |d| existing_keys.include?(deal_key(d)) }
     end
 
-    def self.mark_deals_as_posted(deals)
+    def self.mark_deal_as_posted(deal_data)
       keys = posted_deal_keys
-      deals.each { |d| keys << deal_key(d) }
+      keys << deal_key(deal_data)
       keys.uniq!
       save_posted_deal_keys(keys)
     end
@@ -100,7 +100,7 @@ module DiscourseIsthereanydeal
     end
 
     def self.post_deal_replies(topic_id, deals)
-      posted = []
+      posted_count = 0
 
       deals.each do |deal_data|
         body = DealFormatter.format_deal_reply(deal_data)
@@ -112,7 +112,8 @@ module DiscourseIsthereanydeal
           skip_validations: true,
         )
 
-        posted << deal_data
+        mark_deal_as_posted(deal_data)
+        posted_count += 1
       rescue => e
         title = deal_data["title"] || "unknown"
         Rails.logger.error(
@@ -120,16 +121,14 @@ module DiscourseIsthereanydeal
         )
       end
 
-      mark_deals_as_posted(posted) if posted.any?
-
       Rails.logger.info(
-        "[DiscourseIsthereanydeal] Posted #{posted.size}/#{deals.size} deal(s) to topic #{topic_id}"
+        "[DiscourseIsthereanydeal] Posted #{posted_count}/#{deals.size} deal(s) to topic #{topic_id}"
       )
     end
 
     private_class_method :get_today_topic_id, :set_today_topic_id,
                          :posted_deal_keys, :save_posted_deal_keys,
-                         :deal_key, :filter_new_deals, :mark_deals_as_posted,
+                         :deal_key, :filter_new_deals, :mark_deal_as_posted,
                          :create_new_topic, :post_deal_replies
   end
 end
