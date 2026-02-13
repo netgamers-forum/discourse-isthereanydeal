@@ -6,4 +6,5 @@ en:
     isthereanydeal_country: "Two-letter country code for regional pricing (e.g. US, GB, DE)"
     isthereanydeal_include_dlc: "Include free DLC deals in addition to full games"
     isthereanydeal_include_mature: "Include deals flagged as mature content"
+    isthereanydeal_minimum_price: "Minimum original price for a deal to be posted. Games with a regular price below this value will be skipped. Set to 0 to include all free deals."
     isthereanydeal_shops: "Shop IDs to monitor for free deals. Browse https://isthereanydeal.com/shops/ and find the numeric ID in each shop URL (e.g. https://isthereanydeal.com/shops/61/). Leave empty to include all shops."

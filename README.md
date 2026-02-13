@@ -50,6 +50,7 @@ After installation, go to **Admin > Settings** and search for `isthereanydeal`. 
 | **isthereanydeal country** | Two-letter country code for regional pricing (e.g. `EU`, `GB`, `US`). Defaults to `EU`. Also determines the timezone used for expiry dates (e.g. EU = CET, US = EST, GB = GMT). |
 | **isthereanydeal include dlc** | Whether to include free DLC deals in addition to full games. |
 | **isthereanydeal include mature** | Whether to include deals flagged as mature content. |
+| **isthereanydeal minimum price** | Minimum original price for a deal to be posted. Games with a regular price below this value are skipped. Set to `0` to include all free deals. |
 | **isthereanydeal shops** | Shop IDs to monitor. Defaults to `61, 16, 35`. Leave empty to include all shops. |
 
 ### Selecting Shops

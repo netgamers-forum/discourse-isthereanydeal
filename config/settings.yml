@@ -23,6 +23,10 @@ plugins:
     default: false
     type: bool
 
+  isthereanydeal_minimum_price:
+    default: 0
+    type: float
+
   isthereanydeal_shops:
     default: "61|16|35"
     type: list

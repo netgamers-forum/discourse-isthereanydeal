@@ -22,6 +22,11 @@ module DiscourseIsthereanydeal
         deals = deals.reject { |d| d["type"] == "dlc" }
       end
 
+      min_price = SiteSetting.isthereanydeal_minimum_price.to_f
+      if min_price > 0
+        deals = deals.select { |d| (d.dig("deal", "regular", "amount") || 0).to_f >= min_price }
+      end
+
       new_deals = filter_new_deals(deals)
       return if new_deals.empty?
 
