@@ -8,20 +8,17 @@ A Discourse plugin that fetches free game deals (100% off) from the IsThereAnyDe
 
 ## Architecture
 
-This is a standard Discourse plugin (Ruby + Ember.js). It runs inside a Discourse instance — there is no standalone build/test step outside of Discourse's own dev environment.
+This is a Ruby-only Discourse plugin (no Ember/frontend assets). It runs inside a Discourse instance — there is no standalone build/test step outside of Discourse's own dev environment. All configuration is done via Discourse site settings.
 
-- **`plugin.rb`** — Entry point. Declares metadata, `enabled_site_setting`, registers admin routes, and loads all modules inside `after_initialize`.
+- **`plugin.rb`** — Entry point. Declares metadata, `enabled_site_setting`, and loads all modules inside `after_initialize`.
 - **`lib/isthereanydeal/api_client.rb`** — HTTP client wrapping the ITAD API. Handles pagination, rate-limit header logging, and free-deal filtering. Uses `Excon` for HTTP.
-- **`lib/isthereanydeal/deal_formatter.rb`** — Pure functions that turn deal data into Discourse markdown.
+- **`lib/isthereanydeal/deal_formatter.rb`** — Pure functions that turn deal data into Discourse markdown. Handles expiry timezone conversion based on configured country.
 - **`lib/isthereanydeal/deal_poster.rb`** — Topic creation/reply logic using `PostCreator`. Manages daily topic tracking and deal deduplication via `PluginStore`.
 - **`app/jobs/scheduled/fetch_free_deals.rb`** — Sidekiq scheduled job (`Jobs::Scheduled`, every 4 hours). Orchestrates ApiClient → DealPoster.
-- **`app/controllers/isthereanydeal_admin_controller.rb`** — Admin-only endpoints to proxy the ITAD shops list and save shop selection.
-- **`assets/javascripts/discourse/admin/`** — Ember route, controller, and template for the admin shop-selector UI.
 
 ## Key External APIs
 
-- **IsThereAnyDeal Deals**: `GET https://api.isthereanydeal.com/deals/v2` — requires API key as `key` query param. Paginated via `hasMore`/`nextOffset`. Rate-limit info in response headers.
-- **IsThereAnyDeal Shops**: `GET https://api.isthereanydeal.com/service/shops/v1` — no auth required. Returns `[{id, title, deals, games, update}]`.
+- **IsThereAnyDeal Deals**: `GET https://api.isthereanydeal.com/deals/v2` — requires API key as `key` query param. Paginated via `hasMore`/`nextOffset`. Rate-limit info in response headers. Sorted by price ascending so free deals come first.
 
 ## State Storage (PluginStore)
 
@@ -35,6 +32,18 @@ To test the scheduled job manually from a Discourse Rails console:
 ```ruby
 Jobs::FetchFreeDeals.new.execute({})
 ```
+
+## Site Settings
+
+All configured via Discourse admin (`/admin/site_settings`), prefix `isthereanydeal_`:
+- `isthereanydeal_enabled` — master toggle (default: false)
+- `isthereanydeal_api_key` — ITAD API key (secret)
+- `isthereanydeal_category_id` — Discourse category for deal topics
+- `isthereanydeal_country` — country code for API requests and expiry timezone (default: "EU")
+- `isthereanydeal_include_dlc` — include DLC deals (default: false)
+- `isthereanydeal_include_mature` — include mature content (default: false)
+- `isthereanydeal_minimum_price` — minimum regular price filter (default: 0)
+- `isthereanydeal_shops` — pipe-delimited shop IDs to filter (default: "61|16|35")
 
 ## Conventions
 
