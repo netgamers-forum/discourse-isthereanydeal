@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Jobs
-  class FetchFreeDeals < ::Jobs::Scheduled
+  class IsthereanydealFetchdeals < ::Jobs::Scheduled
     every 4.hours
 
     def execute(args)

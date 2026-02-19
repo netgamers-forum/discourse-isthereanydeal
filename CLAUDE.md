@@ -14,7 +14,7 @@ This is a Ruby-only Discourse plugin (no Ember/frontend assets). It runs inside 
 - **`lib/isthereanydeal/api_client.rb`** — HTTP client wrapping the ITAD API. Handles pagination, rate-limit header logging, and free-deal filtering. Uses `Excon` for HTTP.
 - **`lib/isthereanydeal/deal_formatter.rb`** — Pure functions that turn deal data into Discourse markdown. Handles expiry timezone conversion based on configured country.
 - **`lib/isthereanydeal/deal_poster.rb`** — Topic creation/reply logic using `PostCreator`. Manages daily topic tracking and deal deduplication via `PluginStore`.
-- **`app/jobs/scheduled/fetch_free_deals.rb`** — Sidekiq scheduled job (`Jobs::Scheduled`, every 4 hours). Orchestrates ApiClient → DealPoster.
+- **`app/jobs/scheduled/isthereanydeal_fetchdeals.rb`** — Sidekiq scheduled job (`Jobs::Scheduled`, every 4 hours). Orchestrates ApiClient → DealPoster.
 
 ## Key External APIs
 
@@ -30,7 +30,7 @@ All under plugin name `"discourse-isthereanydeal"`:
 
 To test the scheduled job manually from a Discourse Rails console:
 ```ruby
-Jobs::FetchFreeDeals.new.execute({})
+Jobs::IsthereanydealFetchdeals.new.execute({})
 ```
 
 ## Site Settings

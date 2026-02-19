@@ -71,7 +71,7 @@ PluginStore.remove("discourse-isthereanydeal", "topic_#{Date.today}")
 PluginStore.remove("discourse-isthereanydeal", "posted_deal_keys")
 
 # Run the job
-Jobs::FetchFreeDeals.new.execute({})
+Jobs::IsthereanydealFetchdeals.new.execute({})
 ```
 
 ## License

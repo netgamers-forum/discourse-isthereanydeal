@@ -16,5 +16,5 @@ after_initialize do
   require_relative "lib/isthereanydeal/api_client"
   require_relative "lib/isthereanydeal/deal_formatter"
   require_relative "lib/isthereanydeal/deal_poster"
-  require_relative "app/jobs/scheduled/fetch_free_deals"
+  require_relative "app/jobs/scheduled/isthereanydeal_fetchdeals"
 end
