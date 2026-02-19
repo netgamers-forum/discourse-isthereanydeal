@@ -17,7 +17,13 @@ module Jobs
 
       DiscourseIsthereanydeal::DealPoster.post_deals(deals)
 
-      Rails.logger.info("[DiscourseIsthereanydeal] Scheduled job completed")
+      if client.last_rate_limit_remaining
+        msg = "[DiscourseIsthereanydeal] Job completed. API quota: #{client.last_rate_limit_remaining}/#{client.last_rate_limit_limit} remaining"
+        msg += ", resets at #{client.last_rate_limit_reset}" if client.last_rate_limit_reset
+        Rails.logger.info(msg)
+      else
+        Rails.logger.info("[DiscourseIsthereanydeal] Job completed. No API quota info available.")
+      end
     end
   end
 end

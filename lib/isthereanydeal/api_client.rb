@@ -6,10 +6,15 @@ module DiscourseIsthereanydeal
     DEALS_PATH = "/deals/v2"
     MAX_LIMIT = 200
 
+    attr_reader :last_rate_limit_remaining, :last_rate_limit_limit, :last_rate_limit_reset
+
     def initialize
       @api_key = SiteSetting.isthereanydeal_api_key
       @country = SiteSetting.isthereanydeal_country
       @mature = SiteSetting.isthereanydeal_include_mature
+      @last_rate_limit_remaining = nil
+      @last_rate_limit_limit = nil
+      @last_rate_limit_reset = nil
     end
 
     # Fetches all free deals (price.amount == 0) by paginating through the API.
@@ -98,9 +103,9 @@ module DiscourseIsthereanydeal
       reset = headers["X-RateLimit-Reset"] || headers["x-ratelimit-reset"]
 
       if remaining
-        msg = "[DiscourseIsthereanydeal] Rate limit: #{remaining}/#{limit} remaining"
-        msg += ", resets at #{reset}" if reset
-        Rails.logger.info(msg)
+        @last_rate_limit_remaining = remaining
+        @last_rate_limit_limit = limit
+        @last_rate_limit_reset = reset
       end
     end
 
