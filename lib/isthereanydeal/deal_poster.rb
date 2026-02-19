@@ -35,8 +35,9 @@ module DiscourseIsthereanydeal
 
       if topic_id && Topic.exists?(id: topic_id)
         post_deal_replies(topic_id, new_deals)
+        update_topic_summary(topic_id, deals)
       else
-        create_new_topic(new_deals, category_id, today)
+        create_new_topic(deals, new_deals, category_id, today)
       end
     end
 
@@ -74,10 +75,10 @@ module DiscourseIsthereanydeal
       save_posted_deal_keys(keys)
     end
 
-    def self.create_new_topic(deals, category_id, date_string)
+    def self.create_new_topic(all_deals, new_deals, category_id, date_string)
       date = Date.parse(date_string)
       title = DealFormatter.topic_title(date)
-      body = DealFormatter.format_summary(deals)
+      body = DealFormatter.format_summary(all_deals)
 
       post = PostCreator.create!(
         Discourse.system_user,
@@ -91,10 +92,10 @@ module DiscourseIsthereanydeal
       set_today_topic_id(date_string, topic_id)
 
       Rails.logger.warn(
-        "[DiscourseIsthereanydeal] [INFO] Created topic #{topic_id} with #{deals.size} free deal(s)"
+        "[DiscourseIsthereanydeal] [INFO] Created topic #{topic_id} with #{new_deals.size} free deal(s)"
       )
 
-      post_deal_replies(topic_id, deals)
+      post_deal_replies(topic_id, new_deals)
     rescue => e
       Rails.logger.error("[DiscourseIsthereanydeal] Failed to create topic: #{e.message}")
     end
@@ -126,9 +127,23 @@ module DiscourseIsthereanydeal
       )
     end
 
+    def self.update_topic_summary(topic_id, all_deals)
+      topic = Topic.find_by(id: topic_id)
+      return unless topic
+
+      first_post = topic.first_post
+      return unless first_post
+
+      new_body = DealFormatter.format_summary(all_deals)
+      revisor = PostRevisor.new(first_post)
+      revisor.revise!(Discourse.system_user, raw: new_body, skip_validations: true)
+    rescue => e
+      Rails.logger.error("[DiscourseIsthereanydeal] Failed to update topic summary: #{e.message}")
+    end
+
     private_class_method :get_today_topic_id, :set_today_topic_id,
                          :posted_deal_keys, :save_posted_deal_keys,
                          :deal_key, :filter_new_deals, :mark_deal_as_posted,
-                         :create_new_topic, :post_deal_replies
+                         :create_new_topic, :post_deal_replies, :update_topic_summary
   end
 end
