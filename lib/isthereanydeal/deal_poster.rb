@@ -90,8 +90,8 @@ module DiscourseIsthereanydeal
       topic_id = post.topic_id
       set_today_topic_id(date_string, topic_id)
 
-      Rails.logger.info(
-        "[DiscourseIsthereanydeal] Created topic #{topic_id} with #{deals.size} free deal(s)"
+      Rails.logger.warn(
+        "[DiscourseIsthereanydeal] [INFO] Created topic #{topic_id} with #{deals.size} free deal(s)"
       )
 
       post_deal_replies(topic_id, deals)
@@ -121,8 +121,8 @@ module DiscourseIsthereanydeal
         )
       end
 
-      Rails.logger.info(
-        "[DiscourseIsthereanydeal] Posted #{posted_count}/#{deals.size} deal(s) to topic #{topic_id}"
+      Rails.logger.warn(
+        "[DiscourseIsthereanydeal] [INFO] Posted #{posted_count}/#{deals.size} deal(s) to topic #{topic_id}"
       )
     end
 
