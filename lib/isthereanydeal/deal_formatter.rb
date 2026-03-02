@@ -66,13 +66,8 @@ module DiscourseIsthereanydeal
     end
 
     # Summary opening post listing deal counts per shop.
-    def self.format_summary(deals)
-      shop_counts = Hash.new(0)
-      deals.each do |deal_data|
-        shop_name = deal_data.dig("deal", "shop", "name") || "Unknown"
-        shop_counts[shop_name] += 1
-      end
-
+    # shop_counts is a Hash of { shop_name => count }.
+    def self.format_summary(shop_counts)
       lines = []
       lines << "Today's free game deals from [IsThereAnyDeal.com](https://isthereanydeal.com/):\n"
       lines << "| Shop | Deals |"

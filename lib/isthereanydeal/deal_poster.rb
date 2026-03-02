@@ -34,10 +34,10 @@ module DiscourseIsthereanydeal
       topic_id = get_today_topic_id(today)
 
       if topic_id && Topic.exists?(id: topic_id)
-        post_deal_replies(topic_id, new_deals)
-        update_topic_summary(topic_id, deals)
+        post_deal_replies(topic_id, new_deals, today)
+        update_topic_summary(topic_id, today)
       else
-        create_new_topic(deals, new_deals, category_id, today)
+        create_new_topic(new_deals, category_id, today)
       end
     end
 
@@ -68,17 +68,36 @@ module DiscourseIsthereanydeal
       deals.reject { |d| existing_keys.include?(deal_key(d)) }
     end
 
-    def self.mark_deal_as_posted(deal_data)
+    # Records the deal in the global dedup list and in the per-day shop count.
+    def self.mark_deal_as_posted(deal_data, date_string)
       keys = posted_deal_keys
       keys << deal_key(deal_data)
       keys.uniq!
       save_posted_deal_keys(keys)
+
+      shop_name = deal_data.dig("deal", "shop", "name") || "Unknown"
+      daily_shops = PluginStore.get(PLUGIN_STORE_KEY, "daily_shops_#{date_string}") || []
+      daily_shops << shop_name
+      PluginStore.set(PLUGIN_STORE_KEY, "daily_shops_#{date_string}", daily_shops)
     end
 
-    def self.create_new_topic(all_deals, new_deals, category_id, date_string)
+    def self.daily_shop_counts(date_string)
+      shops = PluginStore.get(PLUGIN_STORE_KEY, "daily_shops_#{date_string}") || []
+      counts = Hash.new(0)
+      shops.each { |shop| counts[shop] += 1 }
+      counts
+    end
+
+    def self.create_new_topic(new_deals, category_id, date_string)
       date = Date.parse(date_string)
       title = DealFormatter.topic_title(date)
-      body = DealFormatter.format_summary(all_deals)
+
+      # Build a preliminary shop count from the deals about to be posted
+      preliminary_counts = Hash.new(0)
+      new_deals.each do |d|
+        preliminary_counts[d.dig("deal", "shop", "name") || "Unknown"] += 1
+      end
+      body = DealFormatter.format_summary(preliminary_counts)
 
       post = PostCreator.create!(
         Discourse.system_user,
@@ -95,12 +114,15 @@ module DiscourseIsthereanydeal
         "[DiscourseIsthereanydeal] [INFO] Created topic #{topic_id} with #{new_deals.size} free deal(s)"
       )
 
-      post_deal_replies(topic_id, new_deals)
+      post_deal_replies(topic_id, new_deals, date_string)
+
+      # Revise opening post with accurate counts after all replies are posted
+      update_topic_summary(topic_id, date_string)
     rescue => e
       Rails.logger.error("[DiscourseIsthereanydeal] Failed to create topic: #{e.message}")
     end
 
-    def self.post_deal_replies(topic_id, deals)
+    def self.post_deal_replies(topic_id, deals, date_string)
       posted_count = 0
 
       deals.each do |deal_data|
@@ -113,7 +135,7 @@ module DiscourseIsthereanydeal
           skip_validations: true,
         )
 
-        mark_deal_as_posted(deal_data)
+        mark_deal_as_posted(deal_data, date_string)
         posted_count += 1
       rescue => e
         title = deal_data["title"] || "unknown"
@@ -127,14 +149,17 @@ module DiscourseIsthereanydeal
       )
     end
 
-    def self.update_topic_summary(topic_id, all_deals)
+    def self.update_topic_summary(topic_id, date_string)
       topic = Topic.find_by(id: topic_id)
       return unless topic
 
       first_post = topic.first_post
       return unless first_post
 
-      new_body = DealFormatter.format_summary(all_deals)
+      shop_counts = daily_shop_counts(date_string)
+      return if shop_counts.empty?
+
+      new_body = DealFormatter.format_summary(shop_counts)
       revisor = PostRevisor.new(first_post)
       revisor.revise!(Discourse.system_user, raw: new_body, skip_validations: true)
     rescue => e
@@ -144,6 +169,7 @@ module DiscourseIsthereanydeal
     private_class_method :get_today_topic_id, :set_today_topic_id,
                          :posted_deal_keys, :save_posted_deal_keys,
                          :deal_key, :filter_new_deals, :mark_deal_as_posted,
-                         :create_new_topic, :post_deal_replies, :update_topic_summary
+                         :daily_shop_counts, :create_new_topic,
+                         :post_deal_replies, :update_topic_summary
   end
 end
